@@ -46,6 +46,7 @@ BEGIN {
     @EXPORT = qw(i18n ni18n i18n_format);
 }
 
+use pf::authentication;
 use pf::config;
 use pf::enforcement qw(reevaluate_access);
 use pf::iplog qw(ip2mac);
@@ -54,7 +55,7 @@ use pf::os qw(dhcp_fingerprint_view);
 use pf::useragent;
 use pf::util;
 use pf::violation qw(violation_count);
-use pf::web::auth; 
+#use pf::web::auth; 
 
 Readonly our $LOOPBACK_IPV4 => '127.0.0.1';
 
@@ -363,7 +364,7 @@ sub generate_login_page {
 
     # authentication
     $vars->{selected_auth} = encode_entities($cgi->param("auth")) || $portalSession->getProfile->getDefaultAuth; 
-    $vars->{list_authentications} = pf::web::auth::list_enabled_auth_types();
+    #$vars->{list_authentications} = pf::web::auth::list_enabled_auth_types();
 
     _render_template($portalSession, 'login.html', $vars);
 }
@@ -617,7 +618,8 @@ sub validate_form {
     my $cgi     = $portalSession->getCgi();
     my $session = $portalSession->getSession();
 
-    if ( $cgi->param("username") && $cgi->param("password") && $cgi->param("auth") ) {
+    #if ( $cgi->param("username") && $cgi->param("password") && $cgi->param("auth") ) {
+    if ( $cgi->param("username") && $cgi->param("password") ) {
 
         # acceptable use pocliy accepted?
         if (!defined($cgi->param("aup_signed")) || !$cgi->param("aup_signed")) {
@@ -625,11 +627,11 @@ sub validate_form {
         }
 
         # validates if supplied auth type is allowed by configuration
-        my $auth = $cgi->param("auth");
-        my @auth_choices = split( /\s*,\s*/, $portalSession->getProfile->getAuth );
-        if ( grep( { $_ eq $auth } @auth_choices ) == 0 ) {
-            return ( 0, 'Unable to validate credentials at the moment' );
-        }
+        #my $auth = $cgi->param("auth");
+        #my @auth_choices = split( /\s*,\s*/, $portalSession->getProfile->getAuth );
+        #if ( grep( { $_ eq $auth } @auth_choices ) == 0 ) {
+        #    return ( 0, 'Unable to validate credentials at the moment' );
+        #}
 
         return (1);
     }
@@ -652,18 +654,19 @@ sub web_user_authenticate {
     my $cgi     = $portalSession->getCgi();
     my $session = $portalSession->getSession();
 
-    my $authenticator = pf::web::auth::instantiate($auth_module);
-    return (0, undef) if (!defined($authenticator));
+    #my $authenticator = pf::web::auth::instantiate($auth_module);
+    #return (0, undef) if (!defined($authenticator));
 
     # validate login and password
-    my $return = $authenticator->authenticate( $cgi->param("username"), $cgi->param("password") );
+    #my $return = $authenticator->authenticate( $cgi->param("username"), $cgi->param("password") );
+    my ($return, $message) = &pf::authentication::authenticate($cgi->param("username"), $cgi->param("password") );
 
     if (defined($return) && $return == 1) {
         #save login into session
         $session->param( "username", $cgi->param("username") );
-        $session->param( "authType", $auth_module );
+        #$session->param( "authType", $auth_module );
     }
-    return ($return, $authenticator);
+    return ($return, $message);
 }
 
 sub generate_registration_page {
@@ -906,3 +909,7 @@ USA.
 =cut
 
 1;
+
+# vim: set shiftwidth=4:
+# vim: set expandtab:
+# vim: set backspace=indent,eol,start:

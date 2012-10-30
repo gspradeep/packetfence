@@ -17,23 +17,6 @@
         <form name="login" method="post" action="/authenticate">
           <input type="hidden" name="destination_url" value="[% destination_url %]" />
 
-          [%# Authentication choice %]
-          [% IF list_authentications.size == 1 %]
-	    [% FOREACH authentication_info IN list_authentications.pairs %]
-              <input type='hidden' name='auth' value='[% authentication_info.key %]' />
-            [% END %]
-          [% ELSE %]
-            <div class="input">
-                <span>[% i18n("Authentication") %]</span>
-        <select name='auth'>
-                [% FOREACH authentication_info IN list_authentications.pairs %]
-                  <option [% IF authentication_info.key == selected_auth %]selected='selected' [% END %]
-                    value='[% authentication_info.key %]'>[% authentication_info.value %]</option>
-                [% END %]
-              </select>
-            </div>
-          [% END %]
-
           [%# User / Pass %]
           <div class="input">
             <span>[% i18n("Username") %]</span>
