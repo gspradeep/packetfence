@@ -613,29 +613,26 @@ sub generate_admin_login_page {
 
 =item manager_authenticate
 
-    return (1, pf::web::auth subclass) for successfull authentication
-    return (0, undef) for inability to check credentials
-    return (0, pf::web::auth subclass) otherwise (pf::web::auth can give detailed error)
+    return (1, undef) for successfull authentication
+    return (0, "error message") for inability to check credentials
 
 =cut
 # Note: quick fix for #1518. Long term goal is to have that functionality in the Catalyst-based admin
 sub manager_authenticate {
-    my ( $cgi, $session, $auth_module ) = @_;
+    my ( $cgi, $session ) = @_;
     my $logger = Log::Log4perl::get_logger(__PACKAGE__);
     $logger->trace("authentication attempt");
 
-    #my $authenticator = pf::web::auth::instantiate($auth_module);
-    #return (0, undef) if (!defined($authenticator));
-
     # validate login and password
-    #my $return = $authenticator->authenticate( $cgi->param("username"), $cgi->param("password") );
+    my ($return, $message) = &pf::authentication::authenticate($cgi->param("username"), $cgi->param("password") );
 
-    #if (defined($return) && $return == 1) {
-        #save login into session
-    #    $session->param( "username", $cgi->param("username") );
-    #    $session->param( "authType", $auth_module );
-    #}
-    #return ($return, $authenticator);
+    if (defined($return) && $return == 1) {
+      #save login into session
+      $session->param( "username", $cgi->param("username") );
+      #    $session->param( "authType", $auth_module );
+    }
+    
+    return ($return, $message);
 }
 
 =item preregister

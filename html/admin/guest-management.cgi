@@ -32,7 +32,6 @@ use pf::web::custom;
 
 # for guest_managers authentication module
 use lib "/usr/local/pf/conf";
-use authentication::guest_managers;
 
 # constants
 Readonly::Scalar my $GUEST_REGISTRATION => "guest-register";
@@ -199,7 +198,7 @@ else {
     }
 
     # User provided username and password: authenticate
-    my ($auth_return, $authenticator) = pf::web::guest::manager_authenticate($cgi, $session, "guest_managers");
+    my ($auth_return, $authenticator) = pf::web::guest::manager_authenticate($cgi, $session);
     if ($auth_return != 1) {
         $logger->info("authentication failed for user ".$cgi->param("username"));
         my $error;
