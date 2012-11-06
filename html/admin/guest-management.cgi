@@ -198,15 +198,9 @@ else {
     }
 
     # User provided username and password: authenticate
-    my ($auth_return, $authenticator) = pf::web::guest::manager_authenticate($cgi, $session);
+    my ($auth_return, $error) = pf::web::guest::manager_authenticate($cgi, $session);
     if ($auth_return != 1) {
         $logger->info("authentication failed for user ".$cgi->param("username"));
-        my $error;
-        if (!defined($authenticator)) {
-            $error = 'Unable to validate credentials at the moment';
-        } else {
-            $error = $authenticator->getLastError();
-        }
         pf::web::guest::generate_admin_login_page($cgi, $session, $error, "guest/mgmt_login.html");
         exit(0);
     }

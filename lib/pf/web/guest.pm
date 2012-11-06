@@ -54,6 +54,7 @@ use pf::web qw(i18n ni18n i18n_format);
 #use pf::web::auth;
 use pf::web::util;
 use pf::sms_activation;
+use pf::Authentication::Action;
 
 our $VERSION = 1.30;
 
@@ -624,12 +625,20 @@ sub manager_authenticate {
     $logger->trace("authentication attempt");
 
     # validate login and password
-    my ($return, $message) = &pf::authentication::authenticate($cgi->param("username"), $cgi->param("password") );
+    my ($return, $message, $source_id) = &pf::authentication::authenticate($cgi->param("username"), $cgi->param("password") );
 
     if (defined($return) && $return == 1) {
-      #save login into session
-      $session->param( "username", $cgi->param("username") );
-      #    $session->param( "authType", $auth_module );
+
+      my $value = &pf::authentication::match($source_id, {username => $cgi->param("username")}, pf::Authentication::Action->SET_ACCESS_LEVEL);
+      
+      if (defined $value && $value == $WEB_ADMIN_ALL) {
+	#save login into session
+	$session->param( "username", $cgi->param("username") );
+	#$session->param( "authType", $auth_module );
+      }
+      else {
+	return (0, "Not authorized to use this module.");
+      }
     }
     
     return ($return, $message);
