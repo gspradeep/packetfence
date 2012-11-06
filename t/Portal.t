@@ -46,7 +46,7 @@ assignments.
 
 =cut
 $pf::config::config_file = '/usr/local/pf/conf/pf.conf.defaults';
-pf::config::load_config();
+pf::config::init_config();
 
 is_deeply(
     pf::Portal::ProfileFactory::_default_profile(),

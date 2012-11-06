@@ -45,6 +45,8 @@ our (
     $default_config_file, %Default_Config, 
     $config_file, %Config, 
     $network_config_file, %ConfigNetworks,
+    $pf_config_file, $pf_default_file, $pf_doc_file, 
+    $switches_config_file, $violations_config_file, $authentication_config_file,
     $dhcp_fingerprints_file, $dhcp_fingerprints_url,
     $oui_file, $oui_url,
     $floating_devices_file, %ConfigFloatingDevices,
@@ -88,7 +90,7 @@ BEGIN {
         is_vlan_enforcement_enabled is_inline_enforcement_enabled
         is_in_list
         $LOG4PERL_RELOAD_TIMER
-        load_config
+        init_config
     );
 }
 
@@ -115,15 +117,21 @@ Readonly::Scalar our $TRUE => 1;
 Readonly::Scalar our $YES => 'yes';
 Readonly::Scalar our $NO => 'no';
 
-$config_file            = $conf_dir . "/pf.conf";
-$default_config_file    = $conf_dir . "/pf.conf.defaults";
-$network_config_file    = $conf_dir . "/networks.conf";
-$dhcp_fingerprints_file = $conf_dir . "/dhcp_fingerprints.conf";
-$oui_file               = $conf_dir . "/oui.txt";
-$floating_devices_file  = $conf_dir . "/floating_network_device.conf";
+$config_file                = $conf_dir . "/pf.conf";           # TODO: To be deprecated. See $pf_config_file
+$default_config_file        = $conf_dir . "/pf.conf.defaults";  # TODO: To be deprecated. See $pf_default_file
+$pf_config_file             = $config_file;                     # TODO: Adjust. See $config_file
+$pf_default_file            = $default_config_file;             # TODO: Adjust. See $default_config_file
+$pf_doc_file                = $conf_dir . "/documentation.conf";
+$network_config_file        = $conf_dir . "/networks.conf";
+$switches_config_file       = $conf_dir . "/switches.conf";
+$violations_config_file     = $conf_dir . "/violations.conf";
+$authentication_config_file = $conf_dir . "/authentication.conf";
+$dhcp_fingerprints_file     = $conf_dir . "/dhcp_fingerprints.conf";
+$oui_file                   = $conf_dir . "/oui.txt";
+$floating_devices_file      = $conf_dir . "/floating_network_device.conf";
 
-$oui_url               = 'http://standards.ieee.org/regauth/oui/oui.txt';
-$dhcp_fingerprints_url = 'http://www.packetfence.org/dhcp_fingerprints.conf';
+$oui_url                    = 'http://standards.ieee.org/regauth/oui/oui.txt';
+$dhcp_fingerprints_url      = 'http://www.packetfence.org/dhcp_fingerprints.conf';
 
 Readonly our @VALID_TRIGGER_TYPES => ( "accounting", "detect", "internal", "mac", "nessus", "openvas", "os", "soh", "useragent", 
         "vendormac" );
@@ -244,7 +252,7 @@ our $BANDWIDTH_UNITS_RE = qr/B|KB|MB|GB|TB/;
 
 # constants are done, let's load the configuration
 try {
-    load_config();
+    init_config();
 } catch {
     chomp($_);
     $logger->logdie("Fatal error preventing configuration to load. Please review your configuration. Error: $_");
@@ -254,7 +262,7 @@ try {
 
 =over
 
-=item load_config
+=item init_config
 
 Load configuration. Can be used to reload it too.
 
@@ -262,7 +270,7 @@ WARNING: This has been recently introduced and was not tested with our
 multi-threaded daemons.
 
 =cut
-sub load_config {
+sub init_config {
     readPfConfigFiles();
     readNetworkConfigFile();
     readFloatingNetworkDeviceFile();
