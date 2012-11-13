@@ -235,7 +235,7 @@ sub violations :Local {
     if (is_success($status)) {
         $c->stash->{violations} = $result;
     }
-    if (is_error($status)) {
+    else {
         $c->response->status($status);
         $c->stash->{status_msg} = $result;
         $c->stash->{current_view} = 'JSON';
@@ -342,8 +342,24 @@ sub _list_items {
 
 
 =head1 AUTHOR
+=head2 roles
 
-Francis Lachapelle <flachapelle@inverse.ca>
+=cut
+
+sub roles :Local {
+    my ( $self, $c ) = @_;
+
+    $c->stash->{template} = 'configuration/roles.tt';
+
+    my ($status, $result) = $c->model('Roles')->list();
+    if (is_success($status)) {
+        $c->stash->{roles} = $result;
+    }
+    else {
+        $c->stash->{error} = $result;
+    }
+}
+
 
 =head1 COPYRIGHT
 

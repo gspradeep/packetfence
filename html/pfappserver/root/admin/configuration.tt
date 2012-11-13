@@ -1,14 +1,17 @@
 [%  jsFiles = [
         'app/jquery-ui',
         'app/bootstrap-datepicker',
+        'app/bootstrap-timepicker',
         'app/chosen.jquery.min',
         'admin/configuration',
         'admin/configuration/authentication',
         'admin/configuration/violations',
-        'admin/configuration/soh'
+        'admin/configuration/soh',
+        'admin/configuration/roles'
         ]
      cssFiles = [
-        'app/bootstrap-datepicker'
+        'app/bootstrap-datepicker',
+        'app/bootstrap-timepicker'
         ] -%]
 
 <style type="text/css">
@@ -66,7 +69,7 @@ table input[type="text"] {
               <li class="nav-header"><i class="icon-check"></i> Compliance</li>
               [% list_entry('Configuration','violations') %]
               [% list_entry('Configuration','soh') %]
-              <li><a href="#">Roles</a></li>
+              [% list_entry('Configuration','roles') %]
               <li><a href="#">Remediation Pages</a></li>
               <li class="nav-header"><i class="icon-eye-open"></i> Identification</li>
               [% list_entry('Configuration','fingerprints') %]

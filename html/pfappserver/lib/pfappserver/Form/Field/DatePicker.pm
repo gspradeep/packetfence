@@ -2,7 +2,7 @@ package pfappserver::Form::Field::DatePicker;
 
 =head1 NAME
 
-pfappserver::Form::Field::DatePicker - to be used with date picker
+pfappserver::Form::Field::DatePicker - to be used with the date picker
 JavaScript widget
 
 =head1 DESCRIPTION
@@ -15,12 +15,6 @@ This field is simply a text field to be formatted by a theme
 use Moose;
 extends 'HTML::FormHandler::Field::Text';
 use namespace::autoclean;
-
-=head1 DESCRIPTION
-
-This field returns Y if true, N if false.
-
-=cut
 
 =head1 COPYRIGHT
 

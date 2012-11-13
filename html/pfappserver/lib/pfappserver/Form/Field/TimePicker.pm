@@ -1,36 +1,26 @@
-package pf::Authentication::Action;
+package pfappserver::Form::Field::TimePicker;
 
 =head1 NAME
 
-pf::Authentication::Action
+pfappserver::Form::Field::TimePicker - to be used with the time picker
+JavaScript widget
 
 =head1 DESCRIPTION
+
+This field is simply a text field to be formatted by a theme
+(Form::Widget::Theme::Pf).
 
 =cut
 
 use Moose;
-
-use pf::Authentication::constants;
-
-has 'type' => (isa => 'Str', is => 'rw', required => 1);
-has 'value' => (isa => 'Str', is => 'rw', required => 0);
-
-sub availableActions {
-    return [
-            $Actions::MARK_AS_SPONSOR,
-            $Actions::SET_ACCESS_LEVEL,
-            $Actions::SET_ROLE,
-            $Actions::SET_UNREG_DATE,
-           ];
-}
-
-=back
+extends 'HTML::FormHandler::Field::Text';
+use namespace::autoclean;
 
 =head1 COPYRIGHT
 
 Copyright (C) 2012 Inverse inc.
 
-=head1 LICENSE 
+=head1 LICENSE
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -51,7 +41,3 @@ USA.
 
 __PACKAGE__->meta->make_immutable;
 1;
-
-# vim: set shiftwidth=4:
-# vim: set expandtab:
-# vim: set backspace=indent,eol,start:
