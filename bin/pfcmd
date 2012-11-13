@@ -184,7 +184,7 @@ if (! exists($cmd_tmp{'grammar'})) {
         'traplog' => sub { traplog(); exit(1); },
         'trigger' => sub { trigger(); exit(1); },
         'ui' => sub { ui(); exit(1); },
-        'update' => sub { update(); exit(1); },
+        'update' => sub {exit( update()); },
         'useragent' => sub { useragent(); exit(1); },
         'version' => sub { version(); exit(1); },
         'violation' => sub {
@@ -293,7 +293,7 @@ sub locationhistoryswitch {
     my $switch  = $cmd{command}[1];
     my $ifIndex = $cmd{command}[2];
     my $date;
-    $date = str2time( $cmd{command}[3] ) if ( defined $cmd{command}[1] );
+    $date = str2time( $cmd{command}[3] ) if ( defined $cmd{command}[3] );
     my %params;
     $params{'ifIndex'} = $ifIndex;
 
@@ -1695,35 +1695,18 @@ sub reload {
 
 sub update {
     my $option = $cmd{command}[1];
-    require LWP::UserAgent;
-    my $browser = LWP::UserAgent->new;
     if ( $option eq "fingerprints" ) {
-        my $response = $browser->get($dhcp_fingerprints_url);
-        if ( !$response->is_success ) {
-            $logger->logdie( "Unable to update DHCP fingerprints: "
-                    . $response->status_line );
+        require pf::os;
+        my ($status,$version_msg,$total) = pf::os::update_dhcp_fingerprints_conf();
+        if ( $status ) {
+            print "DHCP fingerprints updated via $dhcp_fingerprints_url to $version_msg\n";
+            print "$total DHCP fingerprints reloaded\n";
         } else {
-            my ($fingerprints_fh);
-            open( $fingerprints_fh, '>', "$dhcp_fingerprints_file" )
-                || $logger->logdie(
-                "Unable to open $dhcp_fingerprints_file: $!");
-            my $fingerprints = $response->content;
-            my ($version)
-                = $fingerprints
-                =~ /^#\s+dhcp_fingerprints.conf:\s+(version.+?)\n/;
-            print $fingerprints_fh $fingerprints;
-            close($fingerprints_fh);
-            $logger->info(
-                "DHCP fingerprints updated via $dhcp_fingerprints_url to $version"
-            );
-            print
-                "DHCP fingerprints updated via $dhcp_fingerprints_url to $version\n";
-            require pf::os;
-            my $fp_total = pf::os::import_dhcp_fingerprints({ force => $TRUE });
-            $logger->info("$fp_total DHCP fingerprints reloaded");
-            print "$fp_total DHCP fingerprints reloaded\n";
+            $logger->logdie( $version_msg);
         }
     } elsif ( $option eq "oui" ) {
+        require LWP::UserAgent;
+        my $browser = LWP::UserAgent->new;
         my $response = $browser->get($oui_url);
         if ( !$response->is_success ) {
             $logger->logdie(
@@ -1738,7 +1721,7 @@ sub update {
             print "OUI prefixes updated via $oui_url\n";
         }
     }
-    exit;
+    return 0;
 }
 
 sub graph {

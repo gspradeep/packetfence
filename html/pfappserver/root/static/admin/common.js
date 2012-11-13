@@ -156,17 +156,17 @@ $(function () {
     });
 
     /* Pagination */
-    $('#results').on('click', '.pagination a', function(event) {
-        var results = $('#results');
-        results.fadeTo('fast', 0.5);
+    $('#section').on('click', '.pagination a', function(event) {
+        var section = $('#section');
+        section.fadeTo('fast', 0.5);
         $.ajax($(this).attr('href'))
         .done(function(data) {
-            results.html(data).fadeTo('fast', 1.0);
+            section.html(data).fadeTo('fast', 1.0);
         })
         .fail(function(jqXHR) {
             var obj = $.parseJSON(jqXHR.responseText);
-            showError(results, obj.status_msg);
-            results.fadeTo('fast', 1.0);
+            showError(section, obj.status_msg);
+            section.fadeTo('fast', 1.0);
         });
         return false;
     });

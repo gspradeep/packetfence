@@ -1,0 +1,49 @@
+
+[% MACRO header(column, title) BLOCK -%]
+[% params = { by => column, filter => filter };
+    IF by == column && direction == 'asc';
+      params.direction = 'desc';
+    END %]
+                  <th><a href="[% c.uri_for(c.action.name, params) %]">[% title %][% IF by == column %] <i class="icon-chevron-[% IF direction == 'desc' %]down[% ELSE %]up[% END %]"></i>[% END %]</a></th>
+[% END -%]
+        <div name="section" class="pagination pagination-right">
+                <table align="center">
+                    <tbody>
+                        <tr>
+                            <td style="padding-right:20px;">
+                                <a href="[% c.uri_for(c.action.name, {action=>"upload"}) %]">
+                                    <img src="/static/img/up.png" alt="Share Unknown User Agents" title="Share Unknown User Agents">Share Unknown User Agents
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+            <h2>UserAgents</h2>
+    [% INCLUDE 'configuration/pagination.inc' IF items.size > 0 %]
+
+                <table class="table table-condensed table-striped">
+              <!--thead>
+                <tr>
+                  [% header('id', 'ID') %]
+                  [% header('classid', 'OS Class ID') %]
+                  [% header('class', 'OS Class') %]
+                  [% header('os', 'Operating System') %]
+                  [% header('fingerprint', 'Fingerprint') %]
+                </tr>
+              </thead-->
+              <tbody>
+                [%- FOREACH fingerprint IN items -%]
+                <tr>
+                    [%- FOREACH field IN field_names -%]
+                  <td>[% fingerprint.$field %]</td>
+                    [%- END -%]
+                </tr>
+                [%- END -%]
+              </tbody>
+            </table>
+[% INCLUDE 'configuration/pagination.inc' IF items.size > 0 %]
+      <div id="noResult" class="unwell[% ' hidden' IF items.size > 0 %]">
+        <i class="icon-search icon-large"></i><p>[% l('No matching useragents') %]</p>
+      </div>

@@ -20,6 +20,7 @@ use namespace::autoclean;
 use POSIX;
 
 use pf::authentication;
+use pf::os;
 # imported only for the $TIME_MODIFIER_RE regex. Ideally shouldn't be 
 # imported but it's better than duplicating regex all over the place.
 use pf::config;
@@ -263,6 +264,82 @@ sub soh :Local {
         $c->stash->{error} = $result;
     }
 }
+
+
+=head2 fingerprints
+
+=cut
+sub fingerprints : Local :Args(0) {
+    my ( $self, $c ) = @_;
+    my $action = $c->request->params->{'action'} || "";
+    if($action eq 'update') {
+        my ($status,$version_msg,$total) = update_dhcp_fingerprints_conf();
+        $c->stash->{status_message} = "DHCP fingerprints updated via $dhcp_fingerprints_url to $version_msg\n" .  "$total DHCP fingerprints reloaded\n";
+    } elsif ($action eq 'upload') {
+    }
+    $self->_list_items($c,'OS');
+}
+
+=head2 useragents
+
+=cut
+sub useragents :Local :Args(0) {
+    my ( $self, $c ) = @_;
+    $self->_list_items($c,'UserAgent');
+}
+
+
+sub _list_items {
+    my ( $self, $c, $model_name ) = @_;
+    my ($filter, $orderby, $orderdirection, $status, $result, $items_ref, $count);
+    my $model = $c->model($model_name); 
+    my $field_names = $model->field_names(); 
+    my $page_num = $c->request->params->{'page_num'} || 1;
+    my $per_page = $c->request->params->{'per_page'} || 25;
+    my $limit_clause = "LIMIT " . (($page_num-1)*$per_page) . "," . $per_page;
+    my %params = ( limit => $limit_clause );
+    
+    if (exists($c->req->params->{'filter'})) {
+        $filter = $c->req->params->{'filter'};
+        $params{'where'} = { type => 'any', like => $filter };
+        $c->stash->{filter} = $filter;
+    }
+    if (exists($c->request->params->{'by'})) {
+        $orderby = $c->request->params->{'by'};
+        if (grep {$_ eq $orderby} (@$field_names)) {
+            $orderdirection = $c->request->params->{'direction'};
+            unless (grep {$_ eq $orderdirection} ('asc', 'desc')) {
+                $orderdirection = 'asc';
+            }
+            $params{'orderby'} = "ORDER BY $orderby $orderdirection";
+            $c->stash->{by} = $orderby;
+            $c->stash->{direction} = $orderdirection;
+        }
+    }
+
+    ($status, $result) = $model->search(%params);
+    if (is_success($status)) {
+        $items_ref = $result;
+        ($status, $result) = $model->countAll(%params);
+    }
+    if (is_success($status)) {
+        $count = $result;
+        $c->stash->{page_num} = $page_num;
+        $c->stash->{per_page} = $per_page;
+        $c->stash->{by} = $orderby || $field_names->[0];
+        $c->stash->{direction} = $orderdirection || 'asc';
+        $c->stash->{items} = $items_ref;
+        $c->stash->{field_names} = $field_names;
+        $c->stash->{count} = $count;
+        $c->stash->{pages_count} = ceil($count/$per_page);
+    }
+    else {
+        $c->response->status($status);
+        $c->stash->{status_msg} = $result;
+        $c->stash->{current_view} = 'JSON';
+    }
+}
+
 
 =head1 AUTHOR
 

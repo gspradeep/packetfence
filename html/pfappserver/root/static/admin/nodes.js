@@ -6,7 +6,7 @@ function init() {
     /* Search */
     $('form[name="simpleSearch"]').submit(function(event) {
         var form = $(this);
-        var results = $('#results');
+        var results = $('#section');
         results.fadeTo('fast', 0.5);
         $.ajax({
             type: 'POST',
@@ -23,7 +23,7 @@ function init() {
             }
             else {
                 var obj = $.parseJSON(jqXHR.responseText);
-                showPermanentError($('#results'), obj.status_msg);
+                showPermanentError($('#section'), obj.status_msg);
             }
         });
         
@@ -31,9 +31,9 @@ function init() {
     });
 
     /* Sort the search results */
-    $('#results').on('click', 'thead a', function(event) {
+    $('#section').on('click', 'thead a', function(event) {
         var url = $(this).attr('href');
-        var results = $('#results');
+        var results = $('#section');
         results.fadeTo('fast', 0.5);
         $.ajax(url)
         .done(function(data) {
@@ -48,7 +48,7 @@ function init() {
             }
             else {
                 var obj = $.parseJSON(jqXHR.responseText);
-                showPermanentError($('#results'), obj.status_msg);
+                showPermanentError($('#section'), obj.status_msg);
             }
         });
 
@@ -56,7 +56,7 @@ function init() {
     });
 
     /* View a node (show the modal editor) */
-    $('#results').on('click', '[href*="#modalNode"]', function(event) {
+    $('#section').on('click', '[href*="#modalNode"]', function(event) {
         var url = $(this).attr('href');
         $.ajax(url)
         .done(function(data) {
@@ -92,7 +92,7 @@ function init() {
             }
             else {
                 var obj = $.parseJSON(jqXHR.responseText);
-                showError($('#results'), obj.status_msg);
+                showError($('#section'), obj.status_msg);
             }
         });
 
@@ -144,7 +144,7 @@ function init() {
     /* Initial search */
     $.ajax('/node/search')
     .done(function(data) {
-        var results = $('#results');
+        var results = $('#section');
         results.html(data);
     })
     .fail(function(jqXHR) {
@@ -154,7 +154,7 @@ function init() {
         }
         else {
             var obj = $.parseJSON(jqXHR.responseText);
-            showError($('#results'), obj.status_msg);
+            showError($('#section'), obj.status_msg);
         }
     });
 }

@@ -34,8 +34,10 @@ BEGIN {
         read_dhcp_fingerprints_conf
         dhcp_fingerprint_view
         dhcp_fingerprint_view_all
+        dhcp_fingerprint_view_all_searchable
         dhcp_fingerprint_count
         import_dhcp_fingerprints
+        update_dhcp_fingerprints_conf
     );
 }
 
@@ -100,6 +102,38 @@ sub os_db_prepare {
     $os_db_prepared = 1;
 }
 
+sub update_dhcp_fingerprints_conf {
+    require LWP::UserAgent;
+    my $logger = Log::Log4perl::get_logger('pf::os');
+    my $browser = LWP::UserAgent->new;
+    my $response = $browser->get($dhcp_fingerprints_url);
+    my ($status,$version_or_msg,$total) = (0,undef,undef);
+    if ( !$response->is_success ) {
+        $version_or_msg = "Unable to update DHCP fingerprints: " . $response->status_line;
+    } else {
+        my ($fingerprints_fh);
+        if( open( $fingerprints_fh, '>', "$dhcp_fingerprints_file" ) ) {
+            my $fingerprints = $response->content;
+            ($version_or_msg)
+                = $fingerprints
+                =~ /^#\s+dhcp_fingerprints.conf:\s+(version.+?)\n/;
+            print $fingerprints_fh $fingerprints;
+            close($fingerprints_fh);
+            $logger->info(
+                "DHCP fingerprints updated via $dhcp_fingerprints_url to $version_or_msg"
+            );
+            $total = pf::os::import_dhcp_fingerprints({ force => $TRUE });
+            $logger->info("$total DHCP fingerprints reloaded");
+            $status = 1;
+        }
+        else {
+           $version_or_msg = "Unable to open $dhcp_fingerprints_file: $!";
+        }
+    }
+    return ($status,$version_or_msg,$total);
+
+}
+
 sub dhcp_fingerprint_view {
     my ($fingerprint) = @_;
     return db_data(OS, $os_statements, 'dhcp_fingerprint_view_sql', $fingerprint );
@@ -107,6 +141,37 @@ sub dhcp_fingerprint_view {
 
 sub dhcp_fingerprint_view_all {
     return db_data(OS, $os_statements, 'dhcp_fingerprint_view_all_sql');
+}
+
+=item * dhcp_fingerprint_view_all - view all nodes based on several criterias
+
+=cut
+sub dhcp_fingerprint_view_all_searchable {
+    my ( %params ) = @_;
+    my $logger = Log::Log4perl::get_logger('pf::os');
+
+    os_db_prepare() if (!$os_db_prepared);
+    my $sql = qq[
+        SELECT d.os_id AS id, d.fingerprint, o.description AS os, c.class_id AS classid, c.description AS class
+        FROM dhcp_fingerprint d
+            LEFT JOIN os_type o ON o.os_id=d.os_id
+            LEFT JOIN os_mapping m ON m.os_type=o.os_id
+            LEFT JOIN os_class c ON  m.os_class=c.class_id
+        ];
+
+    if ( defined( $params{'orderby'} ) ) {
+        $sql .= " " . $params{'orderby'};
+    }
+    if ( defined( $params{'limit'} ) ) {
+        $sql .= " " . $params{'limit'};
+    }
+
+    # Hack! Because of the nature of the query built here (we cannot prepare it), we construct it as a string
+    # and pf::db will recognize it and prepare it as such
+    $os_statements->{'dhcp_fingerprint_view_all_sql_custom'} = $sql;
+    $logger->debug($sql);
+
+    return db_data(OS, $os_statements, 'dhcp_fingerprint_view_all_sql_custom');
 }
 
 sub dhcp_fingerprint_count {

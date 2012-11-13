@@ -17,6 +17,7 @@ use warnings;
 
 use HTTP::BrowserDetect;
 use Log::Log4perl;
+use Sort::Naturally;
 
 use constant USERAGENT => 'useragent';
 
@@ -27,10 +28,13 @@ BEGIN {
     @EXPORT = qw($useragent_db_prepared useragent_db_prepare);
     @EXPORT_OK = qw(
         view view_all add 
+        view_all_searchable
         property_to_tid
         process_useragent
         node_useragent_view
         node_useragent_view_all
+        node_useragent_count
+        count
         is_mobile
     );
 }
@@ -66,6 +70,10 @@ sub useragent_db_prepare {
         SELECT mac FROM node_useragent WHERE mac = ?
     ]);
 
+    $useragent_statements->{'node_useragent_count_sql'} = get_db_handle()->prepare(qq[
+        SELECT count(*) FROM node_useragent;
+    ]);
+
     $useragent_statements->{'node_useragent_insert_sql'} = get_db_handle()->prepare(qq[
         INSERT INTO node_useragent (mac, os, browser, device, device_name, mobile) 
         VALUES (?, ?, ?, ?, ?, ?)
@@ -90,6 +98,18 @@ sub useragent_db_prepare {
     ]);
 
     $useragent_db_prepared = 1;
+}
+
+=item node_useragent_count
+
+Returns the count of the node_useragent
+
+=cut
+sub node_useragent_count {
+    my $query = db_query_execute(USERAGENT, $useragent_statements, 'node_useragent_count_sql');
+    my ($val) = $query->fetchrow_array();
+    $query->finish();
+    return ($val);
 }
 
 =item node_useragent_exist
@@ -217,6 +237,17 @@ sub is_mobile {
     return $FALSE;
 }
 
+=item count
+
+View a single useragent trigger
+
+=cut
+sub count {
+    _init() if (!@useragent_data);
+
+    return (scalar @useragent_data);
+}
+
 =item view
 
 View a single useragent trigger
@@ -247,6 +278,32 @@ sub view_all {
     _init() if (!@useragent_data);
 
     return @useragent_data;
+}
+
+=item view_all_search
+
+View all useragent triggers
+
+=cut
+sub view_all_searchable {
+    my $logger = Log::Log4perl::get_logger('pf::useragent');
+    my ( %params ) = @_;
+    _init() if (!@useragent_data);
+    my @data = @useragent_data; 
+    if(exists $params{orderby}) {
+        my ($field,$order) = $params{orderby} =~ /ORDER BY\s*(.*)\s*(.*)/;
+        if($order eq 'desc') {
+            @data = sort {ncmp ($b->{$field}, $a->{$field}) } @data;
+        }
+        else {
+            @data = sort {ncmp ($a->{$field}, $b->{$field}) } @data;
+        }
+    }
+    if(exists $params{limit}) {
+        my ($start,$per_page) = $params{limit} =~ /(\d+)\s*,\s*(\d+)/;
+        @data = @data[$start .. ($start+$per_page - 1)];
+    }
+    return @data;
 }
 
 

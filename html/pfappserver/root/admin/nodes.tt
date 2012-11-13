@@ -177,7 +177,7 @@ form {
               </div>
             </div>
           </form>
-          <div class="row-fluid" id="results">
+          <div class="row-fluid" id="section">
           </div>
         </div><!--/span-->
       </div><!--/row-->
