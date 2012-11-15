@@ -731,3 +731,7 @@ msgstr "SoH Filters"
 msgid "useragents"
 msgstr "User Agents"
 
+#:
+msgid "roles"
+msgstr "Roles"
+

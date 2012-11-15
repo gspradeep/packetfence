@@ -276,6 +276,14 @@ sub fingerprints : Local :Args(0) {
         my ($status,$version_msg,$total) = update_dhcp_fingerprints_conf();
         $c->stash->{status_message} = "DHCP fingerprints updated via $dhcp_fingerprints_url to $version_msg\n" .  "$total DHCP fingerprints reloaded\n";
     } elsif ($action eq 'upload') {
+        require pf::pfcmd::report;
+        import pf::pfcmd::report qw(report_unknownprints_all);
+        my $content = join("\n", (map { join(":",@{$_}{qw(dhcp_fingerprint vendor computername user_agent)})    } report_unknownprints_all()),"");
+        if($content) {
+            require LWP::UserAgent;
+            my $browser = LWP::UserAgent->new; 
+            my $response = $browser->post('http://www.packetfence.org/fingerprintsv2.php?ref='. $c->req->uri() ,{fingerprints=>$content}); 
+        }
     }
     $self->_list_items($c,'OS');
 }
@@ -285,6 +293,21 @@ sub fingerprints : Local :Args(0) {
 =cut
 sub useragents :Local :Args(0) {
     my ( $self, $c ) = @_;
+    my $action = $c->request->params->{'action'} || "";
+    if ($action eq 'upload') {
+        require PHP::Serialization;
+        require pf::pfcmd::report;
+        import pf::pfcmd::report qw(report_unknownuseragents_all);
+        my %data = map { $_->{user_agent} => $_  } report_unknownuseragents_all();
+        if(%data) {
+            use IO::Compress::Gzip qw(gzip);
+            use MIME::Base64;
+            my $content = encode_base64(gzip(PHP::Serialization::serialize(\%data)));
+            require LWP::UserAgent;
+            my $browser = gzip(LWP::UserAgent->new); 
+            my $response = $browser->post('http://www.packetfence.org/useragents.php?ref='. $c->req->uri() ,{useragent_fingerprints=>$content}); 
+        }
+    }
     $self->_list_items($c,'UserAgent');
 }
 
