@@ -57,7 +57,7 @@ table input[type="text"] {
               [% list_entry('Configuration','proxies') %]
               [% list_entry('Configuration','trapping') %]
               [% list_entry('Configuration','registration') %]
-              <li><a href="#">Portal Pages</a></li>
+              <li><a href="#">Portal Profiles and Pages</a></li>
               <li class="nav-header"><i class="icon-random"></i> Network<li>
               <li><a href="#">Interfaces</a></li>
               <li><a href="#">Networks</a></li>
@@ -74,6 +74,7 @@ table input[type="text"] {
               <li class="nav-header"><i class="icon-eye-open"></i> Identification</li>
               [% list_entry('Configuration','fingerprints') %]
               [% list_entry('Configuration','useragents') %]
+              <li><a href="#">MAC Addresses</a></li>
             </ul>
           </div><!--/.well -->
         </div><!--/span-->
