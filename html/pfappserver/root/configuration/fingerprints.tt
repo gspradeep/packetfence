@@ -1,11 +1,3 @@
-
-[% MACRO header(column, title) BLOCK -%]
-[% params = { by => column, filter => filter };
-    IF by == column && direction == 'asc';
-      params.direction = 'desc';
-    END %]
-                  <th><a href="[% c.uri_for(c.action.name, params) %]">[% title %][% IF by == column %] <i class="icon-chevron-[% IF direction == 'desc' %]down[% ELSE %]up[% END %]"></i>[% END %]</a></th>
-[% END -%]
         <div name="section" class="pagination pagination-right">
                 <table align="center">
                     <tbody>
@@ -17,7 +9,7 @@
                             </td>
                             <td>
                                 <a href="[% c.uri_for(c.action.name, {action=>"update"}) %]">
-                                    <img src="/static/img/update.png" alt="Update Fingerprints &amp; OUI Prefixes" title="Update Fingerprints &amp; OUI Prefixes">Update Fingerprints &amp; OUI Prefixes
+                                    <img src="/static/img/update.png" alt="Update Fingerprints &amp; OUI Prefixes" title="Update Fingerprints &amp; OUI Prefixes">Update Fingerprints
                                 </a>
 
                             </td>
@@ -27,29 +19,14 @@
             </div>
         </div>
             <h2>Fingerprints</h2>
-    [% INCLUDE 'configuration/pagination.inc' IF items.size > 0 %]
-
-                <table class="table table-condensed table-striped">
-              <thead>
-                <tr>
-                  [% header('id', 'ID') %]
-                  [% header('classid', 'OS Class ID') %]
-                  [% header('class', 'OS Class') %]
-                  [% header('os', 'Operating System') %]
-                  [% header('fingerprint', 'Fingerprint') %]
-                </tr>
-              </thead>
-              <tbody>
-                [%- FOREACH fingerprint IN items -%]
-                <tr>
-                    [%- FOREACH field IN field_names -%]
-                  <td>[% fingerprint.$field %]</td>
-                    [%- END -%]
-                </tr>
-                [%- END -%]
-              </tbody>
-            </table>
-[% INCLUDE 'configuration/pagination.inc' IF items.size > 0 %]
+    [%- INCLUDE 'configuration/listing.inc' titles = {
+            id => 'ID',
+            classid => 'OS Class ID',
+            class => 'OS Class',
+            os => 'Operating System',
+            fingerprint => 'Fingerprint' 
+        }
+     -%]
       <div id="noResult" class="unwell[% ' hidden' IF items.size > 0 %]">
         <i class="icon-search icon-large"></i><p>[% l('No matching fingerprints') %]</p>
       </div>

@@ -21,7 +21,7 @@ use Time::Local;
 
 use pf::config;
 use pf::error qw(is_error is_success);
-use pf::os qw(dhcp_fingerprint_count dhcp_fingerprint_view_all_searchable);
+use pf::os qw(dhcp_fingerprint_count_searchable dhcp_fingerprint_view_all_searchable);
 use pf::util;
 
 =head1 METHODS
@@ -40,17 +40,17 @@ sub field_names {
 
 =cut
 sub countAll {
-    my ( $self, %params ) = @_;
+    my ( $self,$result, %params ) = @_;
 
     my $logger = Log::Log4perl::get_logger(__PACKAGE__);
     my ($status, $status_msg);
 
     my $count;
     eval {
-        $count = dhcp_fingerprint_count(undef, %params);
+        $count = dhcp_fingerprint_count_searchable(%params);
     };
     if ($@) {
-        $status_msg = "Can't count nodes from database.";
+        $status_msg = "Can't count fingerprints from database.";
         $logger->error($status_msg);
         return ($STATUS::INTERNAL_SERVER_ERROR, $status_msg);
     }

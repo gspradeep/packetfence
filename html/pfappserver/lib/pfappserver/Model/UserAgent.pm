@@ -72,7 +72,7 @@ sub search {
         @items = view_all_searchable( %params);
     };
     if ($@) {
-        $status_msg = "Can't fetch useragents from database.";
+        $status_msg = "Can't fetch useragents from database. $@";
         $logger->error($status_msg);
         return ($STATUS::INTERNAL_SERVER_ERROR, $status_msg);
     }
