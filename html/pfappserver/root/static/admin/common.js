@@ -182,8 +182,8 @@ $(function () {
         });
     });
 
-    /* Pagination */
-    $('#section').on('click', '.pagination a', function(event) {
+    /* Page refresh */
+    $('#section').on('click', 'a.refresh-section', function(event) {
         var section = $('#section');
         section.fadeTo('fast', 0.5);
         $.ajax($(this).attr('href'))
