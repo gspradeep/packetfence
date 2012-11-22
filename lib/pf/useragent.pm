@@ -35,7 +35,8 @@ BEGIN {
         node_useragent_view
         node_useragent_view_all
         node_useragent_count
-        count
+        node_useragent_count_searchable
+        node_useragent_view_all_searchable
         is_mobile
     );
 }
@@ -243,10 +244,29 @@ sub is_mobile {
 View a single useragent trigger
 
 =cut
-sub count {
+sub node_useragent_count_searchable {
+    my ( %params ) = @_;
     _init() if (!@useragent_data);
 
-    return (scalar @useragent_data);
+    my $greper = _make_greper(\%params);
+    my $count  =
+        grep {&$greper}
+        @useragent_data;
+    return ($count);
+}
+
+
+sub _make_greper {
+    my ($params) = (@_);
+    my $greper = sub {1};
+    if ( exists $params->{where} ) {
+        my $where = $params->{where};
+        if($where->{type} eq 'any' && $where->{like} ne '' ) {
+            my $like = $where->{like};
+            $greper = sub {my $obj = $_; first { my $data = $obj->{$_}; defined($data) && $data =~ /\Q$like\E/} qw(id property description) };
+        }
+    }
+    return $greper;
 }
 
 =item view
@@ -281,19 +301,39 @@ sub view_all {
     return @useragent_data;
 }
 
-=item view_all_search
+=item node_useragent_view_all_searchable
 
 View all useragent triggers
 
 =cut
-sub view_all_searchable {
+sub node_useragent_view_all_searchable {
     my $logger = Log::Log4perl::get_logger('pf::useragent');
     my ( %params ) = @_;
     _init() if (!@useragent_data);
+    my $greper = _make_greper(\%params);
+    my $sorter = _make_sorter(\%params); 
+    my @data  =
+        sort $sorter
+        grep {&$greper}
+        @useragent_data;
+    if(exists $params{limit}) {
+        my ($start,$per_page) = $params{limit} =~ /(\d+)\s*,\s*(\d+)/;
+        if(@data > $per_page) {
+            my $end = ($start+$per_page - 1);
+            if ($end > $#data) {
+                $end = $#data;
+            }
+            @data = @data[$start ..  $end];
+        }
+    }
+    return @data;
+}
+
+sub _make_sorter {
+    my ($params) = @_;
     my $sorter = sub {ncmp ($a->{id}, $b->{id}) };
-    my $greper = sub {1};
-    if(exists $params{orderby}) {
-        my ($field,$order) = $params{orderby} =~ /ORDER BY\s+(.*)\s+(.*)/;
+    if(exists $params->{orderby}) {
+        my ($field,$order) = $params->{orderby} =~ /ORDER BY\s+(.*)\s+(.*)/;
         if($order eq 'desc') {
             $sorter = sub {ncmp ($b->{$field}, $a->{$field}) };
         }
@@ -301,24 +341,7 @@ sub view_all_searchable {
             $sorter = sub {ncmp ($a->{$field}, $b->{$field}) };
         }
     }
-    if ( exists $params{where} ) {
-        my $where = $params{where};
-        if($where->{type} eq 'any' && $where->{like} ne '' ) {
-            my $like = $where->{like};
-            $greper = sub {my $obj = $_; first { my $data = $obj->{$_}; defined($data) && $data =~ /\Q$like\E/} qw(id property description) };
-        }
-    }
-    my @data  =
-        sort $sorter
-        grep {&$greper}
-        @useragent_data;
-    if(exists $params{limit}) {
-        my ($start,$per_page) = $params{limit} =~ /(\d+)\s*,\s*(\d+)/;
-        if( scalar @data >  $per_page ) {
-            @data = @data[$start .. ($start+$per_page - 1)];
-        }
-    }
-    return @data;
+    return $sorter;
 }
 
 
