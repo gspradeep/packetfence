@@ -5,6 +5,7 @@
         'app/chosen.jquery.min',
         'admin/configuration',
         'admin/configuration/authentication',
+        'admin/configuration/users',
         'admin/configuration/violations',
         'admin/configuration/soh',
         'admin/configuration/roles'
@@ -65,7 +66,7 @@ table input[type="text"] {
               <li><a href="#">Floating devices</a></li>
               <li class="nav-header"><i class="icon-user"></i> Users</li>
               [% list_entry('Configuration','authentication') %]
-              [% list_entry('Authentication','import') %]
+              [% list_entry('Configuration','users') %]
               <li class="nav-header"><i class="icon-check"></i> Compliance</li>
               [% list_entry('Configuration','violations') %]
               [% list_entry('Configuration','soh') %]
@@ -78,6 +79,7 @@ table input[type="text"] {
             </ul>
           </div><!--/.well -->
         </div><!--/span-->
+        <div class="loader"><p><img src="[% c.uri_for('/static/app/loader-48.gif') %]"></p></div>
         <div id="section" class="span10">
         </div><!--/span-->
       </div><!--/row-->
