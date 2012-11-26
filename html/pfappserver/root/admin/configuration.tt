@@ -3,8 +3,10 @@
         'app/bootstrap-datepicker',
         'app/bootstrap-timepicker',
         'app/chosen.jquery.min',
+        'app/jquery.ba-hashchange',
         'admin/configuration',
         'admin/configuration/authentication',
+        'admin/configuration/users',
         'admin/configuration/violations',
         'admin/configuration/soh',
         'admin/configuration/roles'
@@ -43,7 +45,7 @@ table input[type="text"] {
 </style>
 [% MACRO list_entry(controller,name) BLOCK %]
               <li[% IF section == name %] class="active"[% END %]>
-                <a href="[% c.uri_for(c.controller(controller).action_for(name)) %]">[% l(name) %]</a>
+                <a href="#[% c.uri_for(c.controller(controller).action_for(name)).path_query() %]">[% l(name) %]</a>
               </li>
 [% END -%]
     <div class="container-fluid">
@@ -65,6 +67,7 @@ table input[type="text"] {
               <li><a href="#">Floating devices</a></li>
               <li class="nav-header"><i class="icon-user"></i> Users</li>
               [% list_entry('Configuration','authentication') %]
+              [% list_entry('Configuration','users') %]
               [% list_entry('Authentication','import') %]
               <li class="nav-header"><i class="icon-check"></i> Compliance</li>
               [% list_entry('Configuration','violations') %]
@@ -78,6 +81,7 @@ table input[type="text"] {
             </ul>
           </div><!--/.well -->
         </div><!--/span-->
+        <div class="loader"><p><img src="[% c.uri_for('/static/app/loader-48.gif') %]"></p></div>
         <div id="section" class="span10">
         </div><!--/span-->
       </div><!--/row-->
