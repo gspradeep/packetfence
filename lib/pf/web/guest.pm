@@ -644,6 +644,29 @@ sub manager_authenticate {
     return ($return, $message);
 }
 
+=item aup
+
+Return the Acceptable User Policy (AUP) defined in the template file
+/usr/local/pf/html/captive-portal/templates/aup_text.html
+
+=cut
+
+sub aup {
+    my $logger = Log::Log4perl::get_logger(__PACKAGE__);
+
+    setlocale( LC_MESSAGES, $Config{'general'}{'locale'} );
+    bindtextdomain( "packetfence", "$conf_dir/locale" );
+    textdomain("packetfence");
+
+    my $html;
+    my $template = Template->new({
+        INCLUDE_PATH => [$CAPTIVE_PORTAL{'TEMPLATE_DIR'}],
+    });
+    $template->process( 'aup_text.html', undef, \$html ) || $logger->error($template->error());
+
+    return $html;
+}
+
 =item preregister
 
 =cut
