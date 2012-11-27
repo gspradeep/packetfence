@@ -78,6 +78,7 @@ function init() {
     $('.sidebar-nav .nav-list .active a').trigger('click');
 
     initAuthentication();
+    initUsers();
     initViolations();
     initSoH();
     initRoles();
