@@ -108,7 +108,7 @@ sub update_dhcp_fingerprints_conf {
     my $logger = Log::Log4perl::get_logger('pf::os');
     my $browser = LWP::UserAgent->new;
     my $response = $browser->get($dhcp_fingerprints_url);
-    my ($status,$version_or_msg,$total) = (0,undef,undef);
+    my ($status,$version_or_msg,$total) = ($response->code,undef,undef);
     if ( !$response->is_success ) {
         $version_or_msg = "Unable to update DHCP fingerprints: " . $response->status_line;
     } else {
@@ -125,7 +125,6 @@ sub update_dhcp_fingerprints_conf {
             );
             $total = pf::os::import_dhcp_fingerprints({ force => $TRUE });
             $logger->info("$total DHCP fingerprints reloaded");
-            $status = 1;
         }
         else {
            $version_or_msg = "Unable to open $dhcp_fingerprints_file: $!";
