@@ -1702,11 +1702,20 @@ sub update {
         if ( $status == HTTP_OK ) {
             print "DHCP fingerprints updated via $dhcp_fingerprints_url to $version_msg\n";
             print "$total DHCP fingerprints reloaded\n";
-        } else {
+        }
+        else {
             $logger->logdie( $version_msg);
         }
-    } elsif ( $option eq "oui" ) {
-        download_oui();
+    }
+    elsif ( $option eq "oui" ) {
+        my ($status,$msg) = download_oui();
+        if ( $status == HTTP_OK ) {
+            load_oui(1);
+            print "$msg\n";
+        }
+         else {
+            $logger->logdie( $msg);
+        }
     }
     return 0;
 }
